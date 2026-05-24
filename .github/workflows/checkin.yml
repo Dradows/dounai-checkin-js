@@ -41,16 +41,7 @@ jobs:
           DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
           JOB_STATUS: ${{ job.status }}
         run: |
-          echo "=== DEBUG: file check ==="
-          ls -la checkin-output.txt
-          echo "=== DEBUG: file content (hex first 100 bytes) ==="
-          xxd checkin-output.txt | head -5
-          echo "=== DEBUG: file content (text) ==="
-          cat -A checkin-output.txt | head -20
-          echo "=== DEBUG: job status ==="
-          echo "${{ job.status }}"
-
-          node -e "
+          cat > notify.js << 'ENDOFSCRIPT'
           const fs = require('fs');
           const crypto = require('crypto');
           const https = require('https');
@@ -59,26 +50,17 @@ jobs:
           const secret = process.env.DINGTALK_SECRET;
           const status = process.env.JOB_STATUS;
           const now = new Date().toLocaleString('zh-CN', {timeZone: 'Asia/Shanghai'});
-          const repo = '${{ github.repository }}';
-          const runId = '${{ github.run_id }}';
+          const repo = 'Dradows/dounai-checkin-js';
+          const runId = process.env.GITHUB_RUN_ID || '';
 
           const raw = fs.readFileSync('checkin-output.txt', 'utf8');
-          console.log('=== DEBUG: raw length =', raw.length);
-          console.log('=== DEBUG: raw content =', JSON.stringify(raw.slice(0, 500)));
-
           const output = raw.trim().slice(0, 2000);
-          console.log('=== DEBUG: trimmed length =', output.length);
-          console.log('=== DEBUG: trimmed content =', JSON.stringify(output));
-
           const isSuccess = status === 'success';
 
           const title = isSuccess ? '✅ 豆奶签到成功' : '❌ 豆奶签到失败';
-          let text = isSuccess
-            ? '## ✅ 豆奶签到成功\n\n- 时间：' + now + '\n\n### 返回内容\n\n\`\`\`\n' + output + '\n\`\`\`'
-            : '## ❌ 豆奶签到失败\n\n- 时间：' + now + '\n\n### 返回内容\n\n\`\`\`\n' + output + '\n\`\`\`\n\n- [查看日志](https://github.com/' + repo + '/actions/runs/' + runId + ')';
-
-          console.log('=== DEBUG: markdown text length =', text.length);
-          console.log('=== DEBUG: markdown text preview =', text.slice(0, 300));
+          const text = isSuccess
+            ? '## ✅ 豆奶签到成功\n\n- 时间：' + now + '\n\n### 返回内容\n\n```\n' + output + '\n```'
+            : '## ❌ 豆奶签到失败\n\n- 时间：' + now + '\n\n### 返回内容\n\n```\n' + output + '\n```\n\n- [查看日志](https://github.com/' + repo + '/actions/runs/' + runId + ')';
 
           const ts = Date.now().toString();
           const sign = encodeURIComponent(
@@ -86,13 +68,10 @@ jobs:
           );
 
           const body = JSON.stringify({ msgtype: 'markdown', markdown: { title, text } });
-          console.log('=== DEBUG: request body length =', body.length);
-          console.log('=== DEBUG: request body preview =', body.slice(0, 500));
 
           const url = new URL(webhook);
           url.searchParams.set('timestamp', ts);
           url.searchParams.set('sign', sign);
-          console.log('=== DEBUG: request URL (masked) =', url.origin + url.pathname + '?...');
 
           const req = https.request(url, { method: 'POST', headers: { 'Content-Type': 'application/json' } }, (res) => {
             let data = '';
@@ -102,5 +81,7 @@ jobs:
           req.on('error', (e) => console.error('DingTalk request error:', e));
           req.write(body);
           req.end();
-          "
+          ENDOFSCRIPT
+
+          node notify.js
           "
