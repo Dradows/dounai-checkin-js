@@ -30,18 +30,45 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
         run: node src/cli.js start
 
-      - name: Send QQ notification
+      - name: Send QQ official bot notification
         if: always()
         env:
-          QMSG_KEY: ${{ secrets.QMSG_KEY }}
-          QMSG_QQ: ${{ secrets.QMSG_QQ }}
+          QQ_BOT_APP_ID: ${{ secrets.QQ_BOT_APP_ID }}
+          QQ_BOT_CLIENT_SECRET: ${{ secrets.QQ_BOT_CLIENT_SECRET }}
+          QQ_BOT_TARGET_ID: ${{ secrets.QQ_BOT_TARGET_ID }}
+          QQ_BOT_TARGET_TYPE: ${{ secrets.QQ_BOT_TARGET_TYPE }}
         run: |
           STATUS="${{ job.status }}"
+          NOW=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')
           if [ "$STATUS" = "success" ]; then
-            MSG="✅ 豆奶签到成功%0A时间：$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
+            MSG="✅ 豆奶签到成功\n时间：${NOW}"
           else
-            MSG="❌ 豆奶签到失败%0A时间：$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')%0A详情：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            MSG="❌ 豆奶签到失败\n时间：${NOW}\n详情：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           fi
-          curl -s -X POST "https://qmsg.zendee.cn/api/v2/send/${QMSG_KEY}" \
-            -d "msg=${MSG}" \
-            -d "qq=${QMSG_QQ}"
+
+          # 获取 access_token
+          TOKEN_RESP=$(curl -s -X POST "https://bots.qq.com/app/getAppAccessToken" \
+            -H "Content-Type: application/json" \
+            -d "{\"appId\":\"${QQ_BOT_APP_ID}\",\"clientSecret\":\"${QQ_BOT_CLIENT_SECRET}\"}")
+
+          ACCESS_TOKEN=$(echo "$TOKEN_RESP" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+
+          if [ -z "$ACCESS_TOKEN" ]; then
+            echo "Failed to get access_token: $TOKEN_RESP"
+            exit 1
+          fi
+
+          # 发送消息
+          TARGET_TYPE="${QQ_BOT_TARGET_TYPE:-user}"
+          if [ "$TARGET_TYPE" = "group" ]; then
+            URL="https://api.sgroup.qq.com/v2/groups/${QQ_BOT_TARGET_ID}/messages"
+          else
+            URL="https://api.sgroup.qq.com/v2/users/${QQ_BOT_TARGET_ID}/messages"
+          fi
+
+          SEND_RESP=$(curl -s -X POST "$URL" \
+            -H "Authorization: QQBot ${ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"content\":\"${MSG}\",\"msg_type\":0}")
+
+          echo "Send response: $SEND_RESP"

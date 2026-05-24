@@ -53,15 +53,20 @@ npm test
 |---|---|
 | `EMAIL` | 豆奶签到账号（邮箱） |
 | `PASSWORD` | 豆奶签到密码 |
-| `QMSG_KEY` | Qmsg酱 的 Key（在 https://qmsg.zendee.cn 获取） |
-| `QMSG_QQ` | 接收通知的 QQ 号（需先添加 Qmsg酱 机器人为好友） |
+| `QQ_BOT_APP_ID` | QQ 官方机器人的 AppID |
+| `QQ_BOT_CLIENT_SECRET` | QQ 官方机器人的 ClientSecret |
+| `QQ_BOT_TARGET_ID` | 接收消息的目标 ID（用户 openid 或群 openid） |
+| `QQ_BOT_TARGET_TYPE` | 目标类型：`user`（私聊，默认）或 `group`（群聊） |
 
-### 配置 Qmsg酱 QQ 通知
+### 配置 QQ 官方机器人
 
-1. 打开 [Qmsg酱](https://qmsg.zendee.cn)，用 QQ 登录
-2. 获取你的 Key
-3. 添加 Qmsg酱 的 QQ 机器人为好友（页面有指引）
-4. 将 Key 和接收通知的 QQ 号填入 GitHub Secrets
+1. 前往 [QQ 开放平台](https://q.qq.com) 创建机器人，获取 **AppID** 和 **ClientSecret**
+2. 在 GitHub Secrets 中配置 `QQ_BOT_APP_ID` 和 `QQ_BOT_CLIENT_SECRET`
+3. 添加机器人为 QQ 好友（私聊通知）或邀请机器人进群（群通知）
+4. 获取目标 ID：
+   - 私聊：在 [QQ 开放平台](https://q.qq.com) 的"沙箱频道"或通过 API 获取用户 openid
+   - 群聊：通过机器人 API 获取群 openid
+5. 将目标 ID 填入 `QQ_BOT_TARGET_ID`，类型填入 `QQ_BOT_TARGET_TYPE`
 
 ### 执行频率
 
@@ -73,4 +78,4 @@ npm test
 
 ### QQ 通知
 
-无论打卡成功或失败，都会通过 Qmsg酱 QQ 机器人发送通知。
+无论打卡成功或失败，都会通过 QQ 官方机器人发送通知。
