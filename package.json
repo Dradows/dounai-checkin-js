@@ -1,0 +1,18 @@
+{
+  "name": "dounai-checkin-js",
+  "version": "1.0.0",
+  "description": "Dounai auto check-in CLI rewritten in JavaScript.",
+  "type": "module",
+  "bin": {
+    "dounai-checkin": "./src/cli.js"
+  },
+  "scripts": {
+    "start": "node ./src/cli.js start",
+    "domain": "node ./src/cli.js domain",
+    "test": "node --test --experimental-test-isolation=none"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}
