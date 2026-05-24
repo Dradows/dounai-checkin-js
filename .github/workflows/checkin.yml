@@ -30,22 +30,18 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
         run: node src/cli.js start
 
-      - name: Send failure notification
-        if: failure()
-        uses: dawidd6/action-send-mail@v4
-        with:
-          server_address: ${{ secrets.MAIL_SERVER_ADDRESS }}
-          server_port: ${{ secrets.MAIL_SERVER_PORT }}
-          secure: true
-          username: ${{ secrets.MAIL_USERNAME }}
-          password: ${{ secrets.MAIL_PASSWORD }}
-          subject: "[Dounai Check-in] 打卡失败通知"
-          to: ${{ secrets.MAIL_TO }}
-          from: ${{ secrets.MAIL_USERNAME }}
-          body: |
-            豆奶签到自动打卡执行失败，请检查。
-
-            失败时间：${{ github.event.repository.updated_at }}
-
-            详细信息请查看 Actions 日志：
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Send QQ notification
+        if: always()
+        env:
+          QMSG_KEY: ${{ secrets.QMSG_KEY }}
+          QMSG_QQ: ${{ secrets.QMSG_QQ }}
+        run: |
+          STATUS="${{ job.status }}"
+          if [ "$STATUS" = "success" ]; then
+            MSG="✅ 豆奶签到成功%0A时间：$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')"
+          else
+            MSG="❌ 豆奶签到失败%0A时间：$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')%0A详情：https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          fi
+          curl -s -X POST "https://qmsg.zendee.cn/api/v2/send/${QMSG_KEY}" \
+            -d "msg=${MSG}" \
+            -d "qq=${QMSG_QQ}"

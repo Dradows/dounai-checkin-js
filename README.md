@@ -53,20 +53,24 @@ npm test
 |---|---|
 | `EMAIL` | 豆奶签到账号（邮箱） |
 | `PASSWORD` | 豆奶签到密码 |
-| `MAIL_SERVER_ADDRESS` | SMTP 服务器地址（如 `smtp.gmail.com`） |
-| `MAIL_SERVER_PORT` | SMTP 端口（如 `465`） |
-| `MAIL_USERNAME` | 发送通知的邮箱地址 |
-| `MAIL_PASSWORD` | 邮箱的 SMTP 授权码（非邮箱密码） |
-| `MAIL_TO` | 失败通知接收邮箱 |
+| `QMSG_KEY` | Qmsg酱 的 Key（在 https://qmsg.zendee.cn 获取） |
+| `QMSG_QQ` | 接收通知的 QQ 号（需先添加 Qmsg酱 机器人为好友） |
+
+### 配置 Qmsg酱 QQ 通知
+
+1. 打开 [Qmsg酱](https://qmsg.zendee.cn)，用 QQ 登录
+2. 获取你的 Key
+3. 添加 Qmsg酱 的 QQ 机器人为好友（页面有指引）
+4. 将 Key 和接收通知的 QQ 号填入 GitHub Secrets
 
 ### 执行频率
 
-默认每天早上 8:00（北京时间）自动执行。如需修改，编辑 `.github/workflows/checkin.yml` 中的 `cron` 表达式。
+每天 0:20 和 9:20（北京时间）自动执行。如需修改，编辑 `.github/workflows/checkin.yml` 中的 `cron` 表达式。
 
 ### 手动触发
 
 进入仓库的 **Actions** 标签页 → 选择 **Dounai Daily Check-in** → 点击 **Run workflow**。
 
-### 失败通知
+### QQ 通知
 
-打卡失败时会自动发送邮件到 `MAIL_TO` 配置的邮箱，邮件中包含 Actions 运行日志链接。
+无论打卡成功或失败，都会通过 Qmsg酱 QQ 机器人发送通知。
