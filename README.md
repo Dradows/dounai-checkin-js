@@ -53,14 +53,15 @@ npm test
 |---|---|
 | `EMAIL` | 豆奶签到账号（邮箱） |
 | `PASSWORD` | 豆奶签到密码 |
-| `DINGTALK_WEBHOOK` | 钉钉机器人 Webhook 地址（完整 URL） |
+| `DINGTALK_WEBHOOK` | 钉钉机器人 Webhook 地址 |
+| `DINGTALK_SECRET` | 钉钉机器人加签密钥 |
 
 ### 配置钉钉机器人
 
 1. 打开钉钉电脑版/手机版，进入需要接收通知的群聊
 2. 群设置 → **智能群助手** → **添加机器人** → **自定义**（通过 Webhook 接入）
-3. 设置机器人名称，安全设置选 **"自定义关键词"**，填入 `豆奶签到`
-4. 复制生成的 **Webhook 地址**，填入 GitHub Secrets 的 `DINGTALK_WEBHOOK`
+3. 设置机器人名称，安全设置选 **"加签"**，复制生成的 **加签密钥** 填入 `DINGTALK_SECRET`
+4. 复制 **Webhook 地址**，填入 `DINGTALK_WEBHOOK`
 
 ### 执行频率
 

@@ -34,6 +34,7 @@ jobs:
         if: always()
         env:
           DINGTALK_WEBHOOK: ${{ secrets.DINGTALK_WEBHOOK }}
+          DINGTALK_SECRET: ${{ secrets.DINGTALK_SECRET }}
         run: |
           STATUS="${{ job.status }}"
           NOW=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')
@@ -45,6 +46,19 @@ jobs:
             TEXT="## ❌ 豆奶签到失败\n\n- 时间：${NOW}\n- [查看日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
           fi
 
-          curl -s -X POST "${DINGTALK_WEBHOOK}" \
+          # 计算加签参数
+          SIGN_PARAMS=$(node -e "
+            const crypto = require('crypto');
+            const ts = Date.now().toString();
+            const secret = process.env.DINGTALK_SECRET;
+            const sign = encodeURIComponent(
+              crypto.createHmac('sha256', secret)
+                .update(ts + '\n' + secret)
+                .digest('base64')
+            );
+            console.log('&timestamp=' + ts + '&sign=' + sign);
+          ")
+
+          curl -s -X POST "${DINGTALK_WEBHOOK}${SIGN_PARAMS}" \
             -H "Content-Type: application/json" \
             -d "{\"msgtype\":\"markdown\",\"markdown\":{\"title\":\"${TITLE}\",\"text\":\"${TEXT}\"}}"
