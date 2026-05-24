@@ -53,20 +53,14 @@ npm test
 |---|---|
 | `EMAIL` | 豆奶签到账号（邮箱） |
 | `PASSWORD` | 豆奶签到密码 |
-| `QQ_BOT_APP_ID` | QQ 官方机器人的 AppID |
-| `QQ_BOT_CLIENT_SECRET` | QQ 官方机器人的 ClientSecret |
-| `QQ_BOT_TARGET_ID` | 接收消息的目标 ID（用户 openid 或群 openid） |
-| `QQ_BOT_TARGET_TYPE` | 目标类型：`user`（私聊，默认）或 `group`（群聊） |
+| `DINGTALK_WEBHOOK` | 钉钉机器人 Webhook 地址（完整 URL） |
 
-### 配置 QQ 官方机器人
+### 配置钉钉机器人
 
-1. 前往 [QQ 开放平台](https://q.qq.com) 创建机器人，获取 **AppID** 和 **ClientSecret**
-2. 在 GitHub Secrets 中配置 `QQ_BOT_APP_ID` 和 `QQ_BOT_CLIENT_SECRET`
-3. 添加机器人为 QQ 好友（私聊通知）或邀请机器人进群（群通知）
-4. 获取目标 ID：
-   - 私聊：在 [QQ 开放平台](https://q.qq.com) 的"沙箱频道"或通过 API 获取用户 openid
-   - 群聊：通过机器人 API 获取群 openid
-5. 将目标 ID 填入 `QQ_BOT_TARGET_ID`，类型填入 `QQ_BOT_TARGET_TYPE`
+1. 打开钉钉电脑版/手机版，进入需要接收通知的群聊
+2. 群设置 → **智能群助手** → **添加机器人** → **自定义**（通过 Webhook 接入）
+3. 设置机器人名称，安全设置选 **"自定义关键词"**，填入 `豆奶签到`
+4. 复制生成的 **Webhook 地址**，填入 GitHub Secrets 的 `DINGTALK_WEBHOOK`
 
 ### 执行频率
 
@@ -76,6 +70,6 @@ npm test
 
 进入仓库的 **Actions** 标签页 → 选择 **Dounai Daily Check-in** → 点击 **Run workflow**。
 
-### QQ 通知
+### 钉钉通知
 
-无论打卡成功或失败，都会通过 QQ 官方机器人发送通知。
+无论打卡成功或失败，都会通过钉钉机器人发送 Markdown 格式通知。
