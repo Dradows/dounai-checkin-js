@@ -28,7 +28,7 @@ jobs:
         env:
           EMAIL: ${{ secrets.EMAIL }}
           PASSWORD: ${{ secrets.PASSWORD }}
-        run: node src/cli.js start
+        run: node src/cli.js start 2>&1 | tee checkin-output.txt
 
       - name: Send DingTalk notification
         if: always()
@@ -38,12 +38,14 @@ jobs:
         run: |
           STATUS="${{ job.status }}"
           NOW=$(TZ='Asia/Shanghai' date '+%Y-%m-%d %H:%M:%S')
+          CHECKIN_OUTPUT=$(cat checkin-output.txt | head -c 2000)
+
           if [ "$STATUS" = "success" ]; then
             TITLE="✅ 豆奶签到成功"
-            TEXT="## ✅ 豆奶签到成功\n\n- 时间：${NOW}"
+            TEXT="## ✅ 豆奶签到成功\n\n- 时间：${NOW}\n\n### 返回内容\n\n\`\`\`\n${CHECKIN_OUTPUT}\n\`\`\`"
           else
             TITLE="❌ 豆奶签到失败"
-            TEXT="## ❌ 豆奶签到失败\n\n- 时间：${NOW}\n- [查看日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+            TEXT="## ❌ 豆奶签到失败\n\n- 时间：${NOW}\n\n### 返回内容\n\n\`\`\`\n${CHECKIN_OUTPUT}\n\`\`\`\n\n- [查看日志](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
           fi
 
           # 计算加签参数
