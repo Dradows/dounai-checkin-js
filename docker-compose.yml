@@ -1,0 +1,16 @@
+services:
+  dounai-checkin:
+    build: .
+    container_name: dounai-checkin
+    environment:
+      - EMAIL=${EMAIL}
+      - PASSWORD=${PASSWORD}
+      - CHECK_TIME=${CHECK_TIME:-08:00}
+      - DINGTALK_WEBHOOK=${DINGTALK_WEBHOOK:-}
+      - DINGTALK_SECRET=${DINGTALK_SECRET:-}
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

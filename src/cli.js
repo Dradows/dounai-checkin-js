@@ -49,12 +49,14 @@ async function main() {
 
   const email = args.email || process.env.EMAIL;
   const password = args.password || process.env.PASSWORD;
+  const dingtalkWebhook = args["dingtalk-webhook"] || process.env.DINGTALK_WEBHOOK || "";
+  const dingtalkSecret = args["dingtalk-secret"] || process.env.DINGTALK_SECRET || "";
 
   if (!email || !password) {
     throw new Error("Missing required --email/EMAIL or --password/PASSWORD");
   }
 
-  await startAutoCheckin({ email, password });
+  await startAutoCheckin({ email, password, dingtalkWebhook, dingtalkSecret });
 }
 
 main().catch((error) => {
