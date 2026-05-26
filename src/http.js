@@ -1,6 +1,18 @@
 import http from "node:http";
 import https from "node:https";
 
+// 共享 keepAlive Agent，确保同一 host 的多个请求复用 TCP 连接（避免 IP 不一致）
+const agents = new Map();
+
+function getAgent(isHttps) {
+  const key = isHttps ? "https" : "http";
+  if (!agents.has(key)) {
+    const mod = isHttps ? https : http;
+    agents.set(key, new mod.Agent({ keepAlive: true }));
+  }
+  return agents.get(key);
+}
+
 export function request(url, options = {}) {
   return new Promise((resolve, reject) => {
     const target = new URL(url);
@@ -10,6 +22,7 @@ export function request(url, options = {}) {
     const req = (isHttps ? https : http).request(
       target,
       {
+        agent: getAgent(isHttps),
         method: options.method || "GET",
         headers: {
           ...(body ? { "Content-Length": Buffer.byteLength(body) } : {}),
