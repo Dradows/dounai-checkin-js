@@ -8,20 +8,28 @@ echo "  Dounai Auto Check-in"
 echo "  每日执行时间: ${CHECK_TIME}"
 echo "========================================"
 
-# 计算到下一次目标时间的秒数
+# 计算到下一次目标时间的秒数（兼容 Alpine/BusyBox）
 next_sleep() {
-  target_hour=$(echo "$CHECK_TIME" | cut -d: -f1)
-  target_min=$(echo "$CHECK_TIME" | cut -d: -f2)
+  # 去除前导零防止被当作八进制
+  target_hour=$(echo "$CHECK_TIME" | cut -d: -f1 | sed 's/^0\+//'); target_hour=${target_hour:-0}
+  target_min=$(echo "$CHECK_TIME" | cut -d: -f2 | sed 's/^0\+//'); target_min=${target_min:-0}
 
-  now_sec=$(date +%s)
-  target_sec=$(date -d "$(date +%Y-%m-%d) ${target_hour}:${target_min}:00" +%s 2>/dev/null || echo 0)
+  # 当前本地时间的时分秒
+  now_hour=$(date +%H | sed 's/^0\+//'); now_hour=${now_hour:-0}
+  now_min=$(date +%M | sed 's/^0\+//'); now_min=${now_min:-0}
+  now_sec=$(date +%S | sed 's/^0\+//'); now_sec=${now_sec:-0}
 
-  if [ "$target_sec" -le "$now_sec" ]; then
-    # 目标时间已过，取明天同一时间
-    target_sec=$(date -d "tomorrow ${target_hour}:${target_min}:00" +%s 2>/dev/null || echo 0)
+  # 转为秒数（从当天 00:00 起算）
+  now_total=$((now_hour * 3600 + now_min * 60 + now_sec))
+  target_total=$((target_hour * 3600 + target_min * 60))
+
+  if [ "$target_total" -gt "$now_total" ]; then
+    # 今天还没到目标时间
+    echo $((target_total - now_total))
+  else
+    # 目标时间已过，等到明天
+    echo $((86400 - now_total + target_total))
   fi
-
-  echo $((target_sec - now_sec))
 }
 
 while true; do
